@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row" style="min-height: 100vh;">
+    <div class="col-2" style="background: lightgrey;padding-top:15px;">
+        <h1>menu</h1>
+        <ul>
+            <li>1 пункт</li>
+            <li>2 пункт</li>
+            <li>3 пункт</li>
+            <li>4 пункт</li>
+        </ul>
+    </div>
+    <div class="col-6" style="padding-top:15px;">
+        <h1>Create video</h1>
+        <form id="videoForm" method="post" action="" enctype="multipart/form-data">
+
+            <div class="mb-3 row">
+                <label for="inputPath" class="col-sm-2 col-form-label">Путь до директории</label>
+                <div class="col-sm-10">
+                    <input type="text" name="inputPath" class="form-control" id="inputPath">
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="inputName" class="col-sm-2 col-form-label">Имя секвенции</label>
+                <div class="col-sm-10">
+                    <input type="text" name="inputName" class="form-control" id="inputName" placeholder="Название без номера и формата, например 'blood'">
+                </div>
+            </div>
+            <div class="mb-3 row">
+                <label for="inputFileName" class="col-sm-2 col-form-label">Название видео</label>
+                <div class="col-sm-10">
+                    <input type="text" name="inputFileName" class="form-control" id="inputFileName" placeholder="Название и формат, например 'blood.mov'">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-secondary">Создать</button>
+        </form>
+    </div>
+    <div id="video" class="col" style="background: lightgrey;padding-top:15px;">
+        <h1>Result</h1>
+    </div>
+</div>
+
+<script defer>
+    $(document).on('submit', "#videoForm", function (e) {
+        e.preventDefault();
+        var data = $('#videoForm').serializeArray();
+        var token = '{{ csrf_token }}';
+        var formData = new FormData($(this)[0]);
+        formData.append('path', data.find(x => x.name === 'inputPath').value);
+        formData.append('name', data.find(x => x.name === 'inputName').value);
+        formData.append('filename', data.find(x => x.name === 'inputFileName').value);
+        $.ajax({
+                type: "POST",
+                url: "{{url_for('video.get_data')}}",
+                headers: {'X-CSRFToken': token},
+                data: $('#videoForm').serialize(),
+                success: function(response) {
+                console.log(response);
+                $('#video').append(
+                                    '<video width="400" height="300" controls>' +
+                                        '<source src="' + response.file_name + '" type="video/mp4">' +
+                                    '</video>'
+                                    )
+                },
+                error: function() {
+                    console.log('it broke');
+                },
+            });
+        });
+</script>
+{% endblock %}
